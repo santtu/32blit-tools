@@ -1,4 +1,5 @@
 from ..builder import AssetBuilder, AssetTool
+from .. import Asset
 
 binary_typemap = {
     'binary': {
@@ -35,9 +36,9 @@ def csv_to_list(input_data, base):
 @AssetBuilder(typemap=binary_typemap)
 def raw(data, subtype):
     if subtype == 'csv':
-        return bytes(csv_to_list(data, base=10))
+        return Asset(bytes(csv_to_list(data, base=10)))
     else:
-        return data
+        return Asset(data)
 
 
 @AssetTool(raw, 'Convert raw/binary or csv data for 32Blit')

@@ -1,11 +1,12 @@
 import pathlib
 
 from ttblit.asset.formatter import AssetFormatter
+from ttblit.asset import Asset
 
 
 def test_formatter_components():
     """Verify formatter results contain the declared components."""
-    data = 'hello', b'hello'
+    data = 'hello', Asset(b'hello', {"a": 1})
     path = pathlib.Path('/no/such/path')
 
     for name, formatter in AssetFormatter._by_name.items():

@@ -8,6 +8,7 @@ from PIL import Image
 from ...core.palette import Colour, Palette
 from ...core.struct import struct_blit_image
 from ..builder import AssetBuilder, AssetTool
+from .. import Asset
 
 image_typemap = {
     'image': {
@@ -33,15 +34,19 @@ def image(data, subtype, palette=None, transparent=None, strict=False, packed=Tr
     # Since we already have bytes, we need to pass PIL an io.BytesIO object
     image = Image.open(io.BytesIO(data)).convert('RGBA')
     image = palette.quantize_image(image, transparent=transparent, strict=strict)
-    return struct_blit_image.build({
+    return Asset(struct_blit_image.build({
         'type': None if packed else 'RW',  # None means let the compressor decide
         'data': {
             'width': image.size[0],
             'height': image.size[1],
             'palette': palette.tostruct(),
             'pixels': image.tobytes(),
-        },
-    })
+        }
+        }),
+        {
+            'img_width': image.size[0],
+            'img_height': image.size[1]
+      })
 
 
 @AssetTool(image, 'Convert images/sprites for 32Blit')

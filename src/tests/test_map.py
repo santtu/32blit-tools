@@ -14,7 +14,7 @@ def test_map_tiled():
 </map>
 ''', 'tiled')
 
-    assert output == b'\x00'
+    assert output.data == b'\x00'
 
 
 def test_map_tiled_struct_8bit():
@@ -30,7 +30,7 @@ def test_map_tiled_struct_8bit():
 </map>
 ''', 'tiled', output_struct=True)
     # Tile indexes 1, 2, 3, 4 will be remapped -1 to 0, 1, 2, 3
-    assert output == struct.pack('<4sBHHH4B', b'MTMX', 0, 4, 1, 1, 0, 1, 2, 3)
+    assert output.data == struct.pack('<4sBHHH4B', b'MTMX', 0, 4, 1, 1, 0, 1, 2, 3)
 
 
 def test_map_tiled_struct_16bit():
@@ -47,7 +47,7 @@ def test_map_tiled_struct_16bit():
 ''', 'tiled', output_struct=True)
     # Tile indexes 256, 257, 258, 259 will be remapped -1 to 255, 256, 257, 258
     # output tile data will be 16bit!
-    assert output == struct.pack('<4sBHHH4H', b'MTMX', 0, 4, 1, 1, 255, 256, 257, 258)
+    assert output.data == struct.pack('<4sBHHH4H', b'MTMX', 0, 4, 1, 1, 255, 256, 257, 258)
 
 
 def test_map_tiled_layer_reorder():
@@ -67,7 +67,7 @@ def test_map_tiled_layer_reorder():
  </layer>
 </map>
 ''', 'tiled', output_struct=True)
-    assert output == struct.pack('<4sBHHH8B', b'MTMX', 0, 4, 1, 2, 0, 1, 2, 3, 4, 5, 6, 7)
+    assert output.data == struct.pack('<4sBHHH8B', b'MTMX', 0, 4, 1, 2, 0, 1, 2, 3, 4, 5, 6, 7)
 
 
 def test_map_empty_tiled_remap_empty():
@@ -83,4 +83,53 @@ def test_map_empty_tiled_remap_empty():
 </map>
 ''', 'tiled', empty_tile=255)
 
-    assert output == b'\x00\xFF'
+    assert output.data == b'\x00\xFF'
+
+
+def test_map_properties():
+    from ttblit.asset.builders import map
+
+    output = map.map.build('''<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="right-down" compressionlevel="-1" width="1" height="1" tilewidth="8" tileheight="8" infinite="0" nextlayerid="2" nextobjectid="1">
+<properties><property name="a" value="1" type="int"/>
+<property name="b" value="quux" /></properties>
+ <layer id="1" name="Tile Layer 1" width="1" height="1">
+  <data encoding="csv">
+1
+</data>
+ </layer>
+</map>
+''', 'tiled')
+
+    assert output.attributes == {
+        'map_height': 1,
+        'map_width': 1,
+        'map_layer_count': 1,
+        'map__a': 1,
+        'map__b': 'quux'
+    }
+
+
+def test_map_layers():
+    from ttblit.asset.builders import map
+
+    output = map.map.build('''<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.2" tiledversion="1.3.2" orientation="orthogonal" renderorder="right-down" compressionlevel="-1" width="1" height="1" tilewidth="8" tileheight="8" infinite="0" nextlayerid="2" nextobjectid="1">
+ <layer id="1" name="Tile Layer 1" width="1" height="1">
+  <data encoding="csv">
+1
+</data>
+</layer>
+ <layer id="2" name="Tile Layer 2" width="1" height="1">
+  <data encoding="csv">
+1
+</data>
+ </layer>
+</map>
+''', 'tiled')
+
+    assert output.attributes == {
+        'map_height': 1,
+        'map_width': 1,
+        'map_layer_count': 2
+    }

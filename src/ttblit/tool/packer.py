@@ -5,6 +5,7 @@ import click
 
 from ..asset.builder import AssetBuilder, make_symbol_name
 from ..asset.writer import AssetWriter
+from ..asset import Asset
 from ..core.yamlloader import YamlLoader
 
 
@@ -58,6 +59,8 @@ class Packer(YamlLoader):
                 for file_opts in file_options:
                     asset_sources.append((input_files, file_opts))
 
+            print("targets", output_file, asset_sources, target_options)
+
             self.targets.append((
                 output_file,
                 asset_sources,
@@ -69,12 +72,12 @@ class Packer(YamlLoader):
         for path, sources, options in self.targets:
             aw = AssetWriter()
             for input_files, file_opts in sources:
-                for asset in self.build_assets(input_files, self.working_path, prefix=options.get('prefix'), **file_opts):
-                    aw.add_asset(*asset)
+                for symbol, asset in self.build_assets(input_files, self.working_path, prefix=options.get('prefix'), **file_opts):
+                    aw.add_asset(symbol, asset)
 
             aw.write(options.get('type'), self.destination_path / path.name, force=force)
 
-    def build_assets(self, input_files, working_path, name=None, type=None, prefix=None, **builder_options):
+    def build_assets(self, input_files, working_path, name=None, type=None, prefix=None, attributes={}, **builder_options):
         if type is None:
             # Glob files all have the same suffix, so we only care about the first one
             try:
@@ -105,7 +108,10 @@ class Packer(YamlLoader):
                 input_type=input_type, input_subtype=input_subtype, prefix=prefix
             )
 
-            yield symbol_name, builder.from_file(file, input_subtype, **builder_options)
+            asset = builder.from_file(file, input_subtype, **builder_options)
+            asset.attributes.update(attributes)
+
+            yield symbol_name, asset
             logging.info(f' - {typestr} {file} -> {symbol_name}')
 
 

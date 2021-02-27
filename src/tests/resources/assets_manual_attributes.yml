@@ -1,0 +1,7 @@
+assets.cpp:
+  image.png:
+    palette: palette.act
+    name: asset_test
+    attributes:
+      author: nobody
+      display_order: 1299122

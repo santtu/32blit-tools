@@ -75,6 +75,12 @@ assets.cpp:
   # and place it in a variable named "asset_level_N_tmx"
   # Since it ends in ".tmx" the builder will run "map_tiled" to convert our source file
   assets/level*.tmx:
+
+  # Some data formats may have properties or attributes, which are included
+  # in CPP/HPP output, but you may also specify them manunally:
+  assets/other_level01.tmx
+    attributes:
+      display_name: Super Difficult Level
 ```
 
 ### Fonts

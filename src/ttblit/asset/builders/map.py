@@ -5,6 +5,7 @@ import click
 
 from ..builder import AssetBuilder, AssetTool
 from .raw import csv_to_list
+from .. import Asset
 
 map_typemap = {
     'tiled': {
@@ -18,6 +19,7 @@ def tiled_to_binary(data, empty_tile, output_struct):
     from xml.etree import ElementTree as ET
     root = ET.fromstring(data)
     layers = root.findall('layer')
+    properties = root.find('properties')
     layer_data = []
     # Sort layers by ID (since .tmx files can have them in arbitrary orders)
     layers.sort(key=lambda l: int(l.get('id')))
@@ -42,12 +44,12 @@ def tiled_to_binary(data, empty_tile, output_struct):
     else:
         layer_data = struct.pack(f'<{len(layer_data)}B', *layer_data)
 
-    if output_struct:  # Fancy struct
-        layer_count = len(layers)
-        width = int(root.get("width"))
-        height = int(root.get("height"))
+    layer_count = len(layers)
+    width = int(root.get("width"))
+    height = int(root.get("height"))
 
-        return struct.pack(
+    if output_struct:  # Fancy struct
+        result = struct.pack(
             '<4sBHHH',
             bytes('MTMX', encoding='utf-8'),
             empty_tile,
@@ -58,7 +60,28 @@ def tiled_to_binary(data, empty_tile, output_struct):
 
     else:
         # Just return the raw layer data
-        return layer_data
+        result = layer_data
+
+    property_map = {}
+
+    if properties is not None:
+        for property in properties.findall('property'):
+            property_type = property.attrib.get('type', 'str')
+            if property_type == 'str':
+                property_value = property.attrib['value']
+            elif property_type == 'int':
+                property_value = int(property.attrib['value'])
+            else:
+                assert False, f"Property type {property_type} not handled"
+
+            property_map["map__" + property.attrib['name']] = property_value
+
+    return Asset(result,
+                 {"map_layer_count": layer_count,
+                  "map_width": width,
+                  "map_height": height,
+                  **property_map})
+
 
 
 @AssetBuilder(typemap=map_typemap)

@@ -193,8 +193,8 @@ class Metadata(YamlLoader):
                 'category': category,
                 'filetypes': filetypes,
                 'url': url,
-                'icon': struct_blit_image.parse(icon),
-                'splash': struct_blit_image.parse(splash)
+                'icon': struct_blit_image.parse(icon.data),
+                'splash': struct_blit_image.parse(splash.data)
             }
         }
 

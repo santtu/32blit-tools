@@ -11,6 +11,9 @@ class AssetFormatter():
     def __init__(self, components=None, extensions=None):
         self.components = components if components else (None, )
         self.extensions = extensions
+        # defaults for backward compatibility
+        self.attributes = lambda symbol, asset: {}
+        self.attributetypes = lambda types: {}
 
     def __call__(self, fragment_func):
         """Decorator method to create a formatter instance from a fragment function."""
@@ -25,6 +28,16 @@ class AssetFormatter():
         self._by_name[self.name] = self
         for ext in self.extensions:
             self._by_extension[ext] = self
+        return self
+
+    def attributer(self, attributes_func):
+        """Decorator to attach an attribute handler to a formatter"""
+        self.attributes = attributes_func
+        return self
+
+    def attribute_typer(self, attribute_types_func):
+        """Decorator to attach an attribute type handler to a formatter"""
+        self.attribute_types = attribute_types_func
         return self
 
     def __repr__(self):
