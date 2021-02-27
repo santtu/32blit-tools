@@ -59,8 +59,6 @@ class Packer(YamlLoader):
                 for file_opts in file_options:
                     asset_sources.append((input_files, file_opts))
 
-            print("targets", output_file, asset_sources, target_options)
-
             self.targets.append((
                 output_file,
                 asset_sources,
