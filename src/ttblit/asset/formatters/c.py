@@ -58,7 +58,7 @@ def c_attr_declaration(symbol):
 
 def c_initializer(asset):
     if type(asset.data) is str:
-        data = asset.data.encode('utf-8')
+        data = asset.data.encode('ascii')
     else:
         data = asset.data
     values = ', '.join(f'0x{c:02x}' for c in data)
